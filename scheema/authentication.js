@@ -1,16 +1,27 @@
-let mongoose = require("mongoose")
+let mongoose = require("mongoose");
+
 let authscheema = new mongoose.Schema({
-    name: String,
-    email: String,
-    password: String,
-    confirmpassword: String
-})
 
-let loginscheema = new mongoose.Schema({
-    email: String,
-    password: String
-})
+    name: {
+        type: String,
+        required: true
+    },
 
-let Signup = mongoose.model("Signup", authscheema)
-let Login = mongoose.model("Login", loginscheema)
-module.exports = { Signup, Login };
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+
+    password: {
+        type: String,
+        required: true
+    }
+
+});
+
+
+let Signup = mongoose.model("Signup", authscheema, "users");
+
+
+module.exports = { Signup };
