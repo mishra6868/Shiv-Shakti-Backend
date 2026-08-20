@@ -1,5 +1,5 @@
 require("../dbs/db");
-
+let bcrypt = require("bcrypt")
 let { Signup } = require("../scheema/authentication");
 
 
@@ -66,10 +66,13 @@ const usersignup = async (req, res) => {
 
 
         // CREATE USER
+        // HASH PASSWORD
+
+        let hashedPassword = await bcrypt.hash(password, 10);
         await Signup.create({
             name: name,
             email: email,
-            password: password
+            password: hashedPassword
         });
 
 
@@ -90,7 +93,6 @@ const usersignup = async (req, res) => {
 };
 
 
-
 // =========================
 // LOGIN
 // =========================
@@ -103,67 +105,126 @@ const userlogin = async (req, res) => {
 
 
         // EMAIL EMPTY
+
         if (!email) {
+
             return res.status(400).json({
+
                 success: false,
+
                 message: "Email is required"
+
             });
+
         }
 
 
         // EMAIL FORMAT
+
         let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if (!emailRegex.test(email)) {
+
             return res.status(400).json({
+
                 success: false,
+
                 message: "Please enter a valid email"
+
             });
+
         }
 
 
         // PASSWORD EMPTY
+
         if (!password) {
+
             return res.status(400).json({
+
                 success: false,
+
                 message: "Password is required"
+
             });
+
         }
 
 
-        // FIND USER
+        // FIND USER USING EMAIL ONLY
+
         let user = await Signup.findOne({
-            email: email,
-            password: password
+
+            email: email
+
         });
 
 
         // USER NOT FOUND
+
         if (!user) {
+
             return res.status(401).json({
+
                 success: false,
+
                 message: "Invalid email or password"
+
             });
+
+        }
+
+
+        // COMPARE PASSWORD
+
+        let passwordMatch = await bcrypt.compare(
+
+            password,
+
+            user.password
+
+        );
+
+
+        // PASSWORD DOES NOT MATCH
+
+        if (!passwordMatch) {
+
+            return res.status(401).json({
+
+                success: false,
+
+                message: "Invalid email or password"
+
+            });
+
         }
 
 
         // LOGIN SUCCESS
+
         res.status(200).json({
+
             success: true,
+
             message: "Login successful"
+
         });
 
 
     } catch (error) {
 
         res.status(500).json({
+
             success: false,
+
             message: error.message
+
         });
 
     }
-};
 
+};
 
 module.exports = {
     usersignup,
